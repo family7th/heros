@@ -1,0 +1,112 @@
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Hero - Admin</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+    <style>
+        .hero-list img {
+            width: 50px;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="page-header container">
+            <h1>王者荣耀 <small>英雄管理器</small></h1>
+        </div>
+    </header>
+    <div class="container hero-list">
+        <form action="/add" method="POST" enctype="multipart/form-data">
+            <table class="table table-hover">
+                <tr>
+                    <td>姓名：</td>
+                    <td><input type="text" name="name"></td>
+                </tr>
+                <tr>
+                    <td>性别：</td>
+                    <td><input id="nan" name="gender" value="男" type="radio"><label for="nan">男</label> <input name="gender" value="女" type="radio" id="nv"><label for="nv">女</label></td>
+                </tr>
+                <tr>
+                    <td>头像：</td>
+                    <td><img src="" alt="" id="photo" width="100">
+                    <input type="file" id="img"></td>
+                    <!-- 添加隐藏域，用于存储图片的路径 -->
+                    <input type="hidden" name="img" >
+                </tr>
+                <tr>
+                    <td></td>
+                    <td><input type="button" id="sub" value="新增"></td>
+                </tr>
+            </table>
+        </form>
+    </div>
+</body>
+<script src = "/js/jquery.js"></script>
+</html>
+<script>
+    $(function(){
+        //我们希望用户一旦选择了文件就进行文件的上传操作：好处就是能够提高用户体验
+        $('#img').on('change',function(){
+            //1.上传文件往往会使用FormData对象来收集文件数据
+            var formdata = new FormData()
+            //2.获取文件数据
+            // console.log(File)
+            var file = document.querySelector('#img').files[0]
+            // console.log(document.querySelector('#img').files)
+            //3.将文件数据添加到formdata对象中，这个formdata对象可以直接作为数据传递
+           formdata.append('img',file) //存储到file   append(key,value)
+            //    formdata.append('username','jack')//存储到fields
+            //发送异步请求，是西安文件数据的上传
+            //当使用formdata+ajax+实现文件上传的时候，必须添加两个属性
+            $.ajax({
+                type:'post',
+                url:'/fileUpload',
+                data:formdata,
+                dataType:'json',
+                processData:false, //告诉ajax不要处理数据，由formdata处理
+                contentType:false,//告诉ajax不要对数据进行编码处理，由formdata处理
+                success:function(res){
+                    // console.log(res)
+                    if(res.code==200){
+                        //实现预览
+                        $('#photo').attr('src','/images/'+res.myimg)
+                        //把路径存到隐藏于中
+                        $("[name='img']").val(res.myimg)
+                    }
+                }
+            })
+        })
+
+
+        // 添加用户  给按钮注册点击事件  
+        $('#sub').on('click',function(e){
+            //阻止默认行为
+            e.preventDefault()
+            //收集收据，发送ajax请求,因为我们这里不用再上传图片了，所以用表单序列化来收集数据
+            // var dataObj = $('form').serialize();
+            // console.log(dataObj)
+            //发送请求
+            $.ajax({
+                type: "post",
+                url: "/add",
+                data:  $('form').serialize(),
+                dataType: "json",
+                success: function (res) {
+                    // console.log(res);
+                    if(res.code==200){
+                        location.href='/'
+                    }else{
+                        alert('添加失败')
+                    }                  
+                }
+            });
+        })
+
+
+        
+    })
+</script>
